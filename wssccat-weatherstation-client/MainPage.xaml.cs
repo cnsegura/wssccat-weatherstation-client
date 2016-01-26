@@ -12,6 +12,10 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using WinRTXamlToolkit.Controls;
+using WinRTXamlToolkit.Controls.DataVisualization;
+using WinRTXamlToolkit.Controls.Common;
+using WinRTXamlToolkit.Controls.Extensions;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -25,11 +29,6 @@ namespace wssccat_weatherstation_client
         public MainPage()
         {
             this.InitializeComponent();
-        }
-
-        private void ClickMe_Click(object sender, RoutedEventArgs e)
-        {
-            this.HelloMessage.Text = "Hello, Windows IoT Core!";
         }
     }
 }
