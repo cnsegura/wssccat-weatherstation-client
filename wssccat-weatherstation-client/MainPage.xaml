@@ -106,6 +106,13 @@
                     UnitBrush="DarkGray" />
 
             </Border>
+            <TextBox
+                    Name="Status"
+                    Grid.Column="1"    
+                    Background="WhiteSmoke"
+                    IsEnabled="False" 
+                    TextChanged="Status_TextChanged"
+                    AcceptsReturn="True" />
         </Grid>
     </Grid>
 </Page>
