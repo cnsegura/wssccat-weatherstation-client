@@ -52,7 +52,7 @@ namespace wssccat_weatherstation_client
                 await ClearScreen();
                 GetData();
 
-                await UpdateScreen(data.TimeStamp, data.FahrenheitTemperature);
+                await Dispatcher.RunAsync(CoreDispatcherPriority.Low, () => UpdateScreen());
 
             }, TimeSpan.FromSeconds(2));
 
@@ -118,10 +118,8 @@ namespace wssccat_weatherstation_client
         {
             await Dispatcher.RunAsync(priority, () => { Status.Text += text + "\n"; });
         }
-        private async Task UpdateScreen(string xValue, int yValue, CoreDispatcherPriority priority = CoreDispatcherPriority.Low)
+        private void UpdateScreen()
         {
-            await Dispatcher.RunAsync(priority, () =>
-            {
                 int i;
                 i = items.Count();
                 LogToScreen("Fake temp is: " + data.FahrenheitTemperature + "\tTime Stamp is: " + data.TimeStamp + "\tCount is " +i);
@@ -135,7 +133,6 @@ namespace wssccat_weatherstation_client
                         Interval = 20,
                         ShowGridLines = true
                     };
-            });
         }
         public class NameValueItem
         {
