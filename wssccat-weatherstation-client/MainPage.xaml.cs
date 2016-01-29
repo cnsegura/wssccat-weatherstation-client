@@ -39,7 +39,6 @@ namespace wssccat_weatherstation_client
         private HttpBaseProtocolFilter sensorFilter = new HttpBaseProtocolFilter();
         private Random _random = new Random();
         private Uri sensorUri = new Uri("http://wssccat:1038");
-       // public List<NameValueItem> items = new List<NameValueItem>();
         public ObservableCollection<NameValueItem> items = new ObservableCollection<NameValueItem>();
         public MainPage()
         {
@@ -50,8 +49,12 @@ namespace wssccat_weatherstation_client
             ThreadPoolTimer readerTimer = ThreadPoolTimer.CreatePeriodicTimer(async (source) =>
             {
                 await ClearScreen();
-                GetData();
+                var item = await GetGraphData();
 
+                if (item != null)
+                {
+                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => items.Add(item));
+                }
                 await Dispatcher.RunAsync(CoreDispatcherPriority.Low, () => UpdateScreen());
 
             }, TimeSpan.FromSeconds(2));
@@ -64,7 +67,7 @@ namespace wssccat_weatherstation_client
         {
             await Dispatcher.RunAsync(priority, () => { Status.Text = ""; });
         }
-        async void GetData()
+        async Task<NameValueItem> GetGraphData()
         {
             try
             {
@@ -75,13 +78,15 @@ namespace wssccat_weatherstation_client
                         //(response.IsSuccessStatusCode)
                     {
                         //TODO PARSE JSON ETC.
+                        return null;
                     }
                     else
                     {
-                        data.FahrenheitTemperature = _random.Next(95, 100);
+                        data.FahrenheitTemperature = _random.Next(75, 100);
                         data.TimeStamp = DateTimeOffset.Now.ToLocalTime().ToString();
-                        
-                        items.Add(new NameValueItem { Name = data.TimeStamp, Value = data.FahrenheitTemperature });
+                        data.BarometricPressure = _random.Next(20, 100);
+                        data.Humidity = _random.Next(20, 100);
+                        return new NameValueItem { Name = data.TimeStamp, Value = data.FahrenheitTemperature };
                        
                     }
                 }
@@ -89,6 +94,7 @@ namespace wssccat_weatherstation_client
             catch (Exception e)
             {
                 //TODO LOG TO SCREEN
+                return null;
             }
             finally
             {
@@ -102,9 +108,7 @@ namespace wssccat_weatherstation_client
         }
         private void UpdateScreen()
         {
-                int i;
-                i = items.Count();
-                LogToScreen("Fake temp is: " + data.FahrenheitTemperature + "\tTime Stamp is: " + data.TimeStamp + "\tCount is " +i);
+                LogToScreen("Fake temp is: " + data.FahrenheitTemperature + "\tTime Stamp is: " + data.TimeStamp + "\tBarometric Pressure is: " + data.BarometricPressure);
                 ((LineSeries)LineChartWithAxes.Series[0]).ItemsSource = items;
                 ((LineSeries)LineChartWithAxes.Series[0]).DependentRangeAxis =
                     new LinearAxis
@@ -115,6 +119,8 @@ namespace wssccat_weatherstation_client
                         Interval = 20,
                         ShowGridLines = true
                     };
+            topGauge.Value = data.BarometricPressure;
+            bottomGauge.Value = data.Humidity;
         }
         public class NameValueItem
         {
@@ -127,10 +133,10 @@ namespace wssccat_weatherstation_client
             {
                 TimeStamp = DateTimeOffset.Now.ToLocalTime().ToString();
             }
-            public float BarometricPressure { get; set; }
+            public int BarometricPressure { get; set; }
             public float CelciusTemperature { get; set; }
             public int FahrenheitTemperature { get; set; } 
-            public float Humidity { get; set; }
+            public int Humidity { get; set; }
             public string TimeStamp { get; set; }
         }
 
