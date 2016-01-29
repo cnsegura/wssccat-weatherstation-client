@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -38,6 +39,8 @@ namespace wssccat_weatherstation_client
         private HttpBaseProtocolFilter sensorFilter = new HttpBaseProtocolFilter();
         private Random _random = new Random();
         private Uri sensorUri = new Uri("http://wssccat:1038");
+        public List<NameValueItem> items = new List<NameValueItem>();
+        //public Collection<NameValueItem> items = new Collection<NameValueItem>();
         public MainPage()
         {
             ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.FullScreen;
@@ -49,9 +52,11 @@ namespace wssccat_weatherstation_client
                 await ClearScreen();
                 GetData();
 
-                await Dispatcher.RunAsync(CoreDispatcherPriority.Low, () => UpdateScreen());
+                await UpdateScreen(data.TimeStamp, data.FahrenheitTemperature);
+
             }, TimeSpan.FromSeconds(2));
-            
+
+
         }
 
 
@@ -73,8 +78,10 @@ namespace wssccat_weatherstation_client
                     }
                     else
                     {
-                        data.FahrenheitTemperature = _random.Next(45, 100);
-                        LogToScreen("Fake temp is: " + data.FahrenheitTemperature);
+                        data.FahrenheitTemperature = _random.Next(95, 100);
+                        data.TimeStamp = DateTimeOffset.Now.ToLocalTime().ToString();
+                        
+                        items.Add(new NameValueItem { Name = data.TimeStamp, Value = data.FahrenheitTemperature });
                         /*
                         List<NameValueItem> items = new List<NameValueItem>();
                         items.Add(new NameValueItem { Name = "Test1", Value = _random.Next(10, 100) });
@@ -109,14 +116,26 @@ namespace wssccat_weatherstation_client
 
         private async void LogToScreen (string text, CoreDispatcherPriority priority = CoreDispatcherPriority.Low)
         {
-            await Dispatcher.RunAsync(priority, () => { Status.Text += text = "\n"; });
+            await Dispatcher.RunAsync(priority, () => { Status.Text += text + "\n"; });
         }
-        private void UpdateScreen()
+        private async Task UpdateScreen(string xValue, int yValue, CoreDispatcherPriority priority = CoreDispatcherPriority.Low)
         {
-            List<NameValueItem> items = new List<NameValueItem>();
-            items.Add(new NameValueItem { Name = data.TimeStamp, Value = data.FahrenheitTemperature });
-            ((LineSeries)LineChartWithAxes.Series[0]).ItemsSource = items;
-
+            await Dispatcher.RunAsync(priority, () =>
+            {
+                int i;
+                i = items.Count();
+                LogToScreen("Fake temp is: " + data.FahrenheitTemperature + "\tTime Stamp is: " + data.TimeStamp + "\tCount is " +i);
+                ((LineSeries)LineChartWithAxes.Series[0]).ItemsSource = items;
+                ((LineSeries)LineChartWithAxes.Series[0]).DependentRangeAxis =
+                    new LinearAxis
+                    {
+                        Minimum = 0,
+                        Maximum = 100,
+                        Orientation = AxisOrientation.Y,
+                        Interval = 20,
+                        ShowGridLines = true
+                    };
+            });
         }
         public class NameValueItem
         {
