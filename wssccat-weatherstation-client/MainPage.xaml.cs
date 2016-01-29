@@ -39,8 +39,8 @@ namespace wssccat_weatherstation_client
         private HttpBaseProtocolFilter sensorFilter = new HttpBaseProtocolFilter();
         private Random _random = new Random();
         private Uri sensorUri = new Uri("http://wssccat:1038");
-        public List<NameValueItem> items = new List<NameValueItem>();
-        //public Collection<NameValueItem> items = new Collection<NameValueItem>();
+       // public List<NameValueItem> items = new List<NameValueItem>();
+        public ObservableCollection<NameValueItem> items = new ObservableCollection<NameValueItem>();
         public MainPage()
         {
             ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.FullScreen;
@@ -82,25 +82,7 @@ namespace wssccat_weatherstation_client
                         data.TimeStamp = DateTimeOffset.Now.ToLocalTime().ToString();
                         
                         items.Add(new NameValueItem { Name = data.TimeStamp, Value = data.FahrenheitTemperature });
-                        /*
-                        List<NameValueItem> items = new List<NameValueItem>();
-                        items.Add(new NameValueItem { Name = "Test1", Value = _random.Next(10, 100) });
-                        items.Add(new NameValueItem { Name = "Test2", Value = _random.Next(10, 100) });
-                        items.Add(new NameValueItem { Name = "Test3", Value = _random.Next(10, 100) });
-                        items.Add(new NameValueItem { Name = "Test4", Value = _random.Next(10, 100) });
-                        items.Add(new NameValueItem { Name = "Test5", Value = _random.Next(10, 100) });
-                        
-                        ((LineSeries)LineChartWithAxes.Series[0]).ItemsSource = items;
-                        ((LineSeries)LineChartWithAxes.Series[0]).DependentRangeAxis =
-                            new LinearAxis
-                            {
-                                Minimum = 0,
-                                Maximum = 100,
-                                Orientation = AxisOrientation.Y,
-                                Interval = 20,
-                                ShowGridLines = true
-                            };
-                            */
+                       
                     }
                 }
             }
