@@ -2,12 +2,18 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Net.Sockets;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.System.Threading;
+using System.Net;
 using System.Threading.Tasks;
+using System.Runtime.Serialization.Json;
+using System.Text;
+using Windows.Networking.Sockets;
+using Windows.Storage.Streams;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
@@ -18,6 +24,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.Web.Http;
+using Windows.Web.Http.Headers;
 using Windows.Web.Http.Filters;
 using WinRTXamlToolkit.Controls;
 using WinRTXamlToolkit.Controls.DataVisualization;
@@ -40,6 +47,9 @@ namespace wssccat_weatherstation_client
         private Random _random = new Random();
         private Uri sensorUri = new Uri("http://wssccat:1038");
         public ObservableCollection<NameValueItem> items = new ObservableCollection<NameValueItem>();
+        private SensorData sensorData;
+        private StreamSocket socket;
+        Uri baseUri = new Uri("http://wssccatiot.westus.cloudapp.azure.com:8080/topic");
         public MainPage()
         {
             ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.FullScreen;
@@ -122,6 +132,33 @@ namespace wssccat_weatherstation_client
             topGauge.Value = data.BarometricPressure;
             bottomGauge.Value = data.Humidity;
         }
+        private async Task PostDataAsync(string topicString)
+        {
+            string respBody = sensorData.JSON;
+            Uri relativeUri = new Uri(topicString);
+            Uri topicUri = new Uri(BaseUri, relativeUri);
+
+            //Currently focused on REST API surface for Confluent.io Kafka deployment
+            string header = string.Format("topics/" + topic + "HTTP/1.1 {0}\r\n" +
+                                              "Host: wssccat2050\r\n" +
+                                              "Content-Type: application/vnd.kafka.v1+json\r\n" + // JSON only
+                                              "Accept: application/vnd.kafka.v1.json, application/vnd.kafka_json, application/json\r\n\r\n");
+            HttpClient httpClient = new HttpClient();
+            try
+            {
+                httpClient.DefaultRequestHeaders.Add("Host:", "wssccat2050");
+                httpClient.DefaultRequestHeaders.Add("Content-Type:", "application/vnd.kafka.v1+json");
+                httpClient.DefaultRequestHeaders.Add("Accept:", "application/vnd.kafka.v1.json, application/vnd.kafka_json, application/json");
+
+                httpClient.PostAsync(topicUri, respBody);
+            }
+            catch
+            {
+
+            }
+
+
+        }
         public class NameValueItem
         {
             public string Name { get; set; }
@@ -138,6 +175,20 @@ namespace wssccat_weatherstation_client
             public int FahrenheitTemperature { get; set; } 
             public int Humidity { get; set; }
             public string TimeStamp { get; set; }
+
+            public string JSON
+            {
+                get
+                {
+                    var jsonSerializer = new DataContractJsonSerializer(typeof(SensorData));
+                    using (MemoryStream strm = new MemoryStream())
+                    {
+                        jsonSerializer.WriteObject(strm, this);
+                        byte[] buf = strm.ToArray(); 
+                        return Encoding.UTF8.GetString(buf, 0, buf.Length);
+                    }
+                }
+            }
         }
 
         private void Status_TextChanged(object sender, TextChangedEventArgs e)
