@@ -48,7 +48,6 @@ namespace wssccat_weatherstation_client
         private Uri sensorUri = new Uri("http://wssccat:1038");
         public ObservableCollection<NameValueItem> items = new ObservableCollection<NameValueItem>();
         private SensorData sensorData;
-        private StreamSocket socket;
         Uri baseUri = new Uri("http://wssccatiot.westus.cloudapp.azure.com:8080/topic");
         public MainPage()
         {
@@ -66,6 +65,7 @@ namespace wssccat_weatherstation_client
                     await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => items.Add(item));
                 }
                 await Dispatcher.RunAsync(CoreDispatcherPriority.Low, () => UpdateScreen());
+                await PostDataAsync("SensorData");
 
             }, TimeSpan.FromSeconds(2));
 
@@ -139,24 +139,16 @@ namespace wssccat_weatherstation_client
             Uri topicUri = new Uri(BaseUri, relativeUri);
 
             //Currently focused on REST API surface for Confluent.io Kafka deployment
-            string header = string.Format("topics/" + topic + "HTTP/1.1 {0}\r\n" +
-                                              "Host: wssccat2050\r\n" +
-                                              "Content-Type: application/vnd.kafka.v1+json\r\n" + // JSON only
-                                              "Accept: application/vnd.kafka.v1.json, application/vnd.kafka_json, application/json\r\n\r\n");
-            HttpClient httpClient = new HttpClient();
-            try
+            using (HttpClient httpClient = new HttpClient())
             {
-                httpClient.DefaultRequestHeaders.Add("Host:", "wssccat2050");
-                httpClient.DefaultRequestHeaders.Add("Content-Type:", "application/vnd.kafka.v1+json");
-                httpClient.DefaultRequestHeaders.Add("Accept:", "application/vnd.kafka.v1.json, application/vnd.kafka_json, application/json");
-
-                httpClient.PostAsync(topicUri, respBody);
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, topicUri);
+                request.Headers.Add("Host:", "wssccat2050");
+                request.Headers.Add("Content-Type:", "application/vnd.kafka.v1+json");
+                request.Headers.Add("Accept:", "application/vnd.kafka.v1.json, application/vnd.kafka_json, application/json");
+                request.Content = new HttpStringContent(respBody, Windows.Storage.Streams.UnicodeEncoding.Utf8);
+                var httprequest = httpClient.SendRequestAsync(request, HttpCompletionOption.ResponseContentRead);
             }
-            catch
-            {
-
-            }
-
+            
 
         }
         public class NameValueItem
