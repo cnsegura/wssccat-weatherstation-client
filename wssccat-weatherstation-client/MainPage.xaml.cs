@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Runtime.Serialization.Json;
 using System.Net.Sockets;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -10,7 +12,6 @@ using Windows.Foundation.Collections;
 using Windows.System.Threading;
 using System.Net;
 using System.Threading.Tasks;
-using System.Runtime.Serialization.Json;
 using System.Text;
 using Windows.Networking.Sockets;
 using Windows.Storage.Streams;
@@ -47,7 +48,6 @@ namespace wssccat_weatherstation_client
         private Random _random = new Random();
         private Uri sensorUri = new Uri("http://wssccat:1038");
         public ObservableCollection<NameValueItem> items = new ObservableCollection<NameValueItem>();
-        private SensorData sensorData;
         //Production private Uri baseUri = new Uri("http://wssccatiot.westus.cloudapp.azure.com:8080/topic");
 
         public MainPage()
@@ -135,8 +135,6 @@ namespace wssccat_weatherstation_client
         }
         private async Task PostDataAsync()
         {
-            //string respBody = sensorData.JSON;
-            string respBody = "test";
             string topicString = "/SensorData";
             UriBuilder u1 = new UriBuilder();
             u1.Host = "localhost";
@@ -144,12 +142,13 @@ namespace wssccat_weatherstation_client
             u1.Path = "topic" + topicString;
             u1.Scheme = "http";
             Uri topicUri = u1.Uri;
+            string json = JsonConvert.SerializeObject(data, Formatting.None);
             //Currently focused on REST API surface for Confluent.io Kafka deployment. We can make this more generic in the future
             HttpClient httpClient = new HttpClient();
             try
             {
                 httpClient.DefaultRequestHeaders.Accept.Add(new HttpMediaTypeWithQualityHeaderValue("application/vnd.kafka.v1+json"));
-                HttpResponseMessage postResponse = await httpClient.PostAsync(topicUri, new HttpStringContent(respBody, Windows.Storage.Streams.UnicodeEncoding.Utf8, "application/vnd.kfka.v1+json"));
+                HttpResponseMessage postResponse = await httpClient.PostAsync(topicUri, new HttpStringContent(json, Windows.Storage.Streams.UnicodeEncoding.Utf8, "application/vnd.kfka.v1+json"));
             }
             catch
             {
@@ -162,7 +161,7 @@ namespace wssccat_weatherstation_client
             public string Name { get; set; }
             public int Value { get; set; }
         }
-        public sealed class SensorData
+        public partial class SensorData
         {
             public SensorData()
             {
@@ -173,20 +172,6 @@ namespace wssccat_weatherstation_client
             public int FahrenheitTemperature { get; set; } 
             public int Humidity { get; set; }
             public string TimeStamp { get; set; }
-
-            public string JSON
-            {
-                get
-                {
-                    var jsonSerializer = new DataContractJsonSerializer(typeof(SensorData));
-                    using (MemoryStream strm = new MemoryStream())
-                    {
-                        jsonSerializer.WriteObject(strm, this);
-                        byte[] buf = strm.ToArray();
-                        return Encoding.UTF8.GetString(buf, 0, buf.Length);
-                    }
-                }
-            }
         }
 
         private void Status_TextChanged(object sender, TextChangedEventArgs e)
