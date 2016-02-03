@@ -48,7 +48,8 @@ namespace wssccat_weatherstation_client
         private Uri sensorUri = new Uri("http://wssccat:1038");
         public ObservableCollection<NameValueItem> items = new ObservableCollection<NameValueItem>();
         private SensorData sensorData;
-        Uri baseUri = new Uri("http://wssccatiot.westus.cloudapp.azure.com:8080/topic");
+        //Production private Uri baseUri = new Uri("http://wssccatiot.westus.cloudapp.azure.com:8080/topic");
+
         public MainPage()
         {
             ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.FullScreen;
@@ -65,7 +66,7 @@ namespace wssccat_weatherstation_client
                     await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => items.Add(item));
                 }
                 await Dispatcher.RunAsync(CoreDispatcherPriority.Low, () => UpdateScreen());
-                await PostDataAsync("SensorData");
+                await PostDataAsync();
 
             }, TimeSpan.FromSeconds(2));
 
@@ -132,23 +133,28 @@ namespace wssccat_weatherstation_client
             topGauge.Value = data.BarometricPressure;
             bottomGauge.Value = data.Humidity;
         }
-        private async Task PostDataAsync(string topicString)
+        private async Task PostDataAsync()
         {
-            string respBody = sensorData.JSON;
-            Uri relativeUri = new Uri(topicString);
-            Uri topicUri = new Uri(BaseUri, relativeUri);
-
-            //Currently focused on REST API surface for Confluent.io Kafka deployment
-            using (HttpClient httpClient = new HttpClient())
+            //string respBody = sensorData.JSON;
+            string respBody = "test";
+            string topicString = "/SensorData";
+            UriBuilder u1 = new UriBuilder();
+            u1.Host = "localhost";
+            u1.Port = 8080;
+            u1.Path = "topic" + topicString;
+            u1.Scheme = "http";
+            Uri topicUri = u1.Uri;
+            //Currently focused on REST API surface for Confluent.io Kafka deployment. We can make this more generic in the future
+            HttpClient httpClient = new HttpClient();
+            try
             {
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, topicUri);
-                request.Headers.Add("Host:", "wssccat2050");
-                request.Headers.Add("Content-Type:", "application/vnd.kafka.v1+json");
-                request.Headers.Add("Accept:", "application/vnd.kafka.v1.json, application/vnd.kafka_json, application/json");
-                request.Content = new HttpStringContent(respBody, Windows.Storage.Streams.UnicodeEncoding.Utf8);
-                var httprequest = httpClient.SendRequestAsync(request, HttpCompletionOption.ResponseContentRead);
+                httpClient.DefaultRequestHeaders.Accept.Add(new HttpMediaTypeWithQualityHeaderValue("application/vnd.kafka.v1+json"));
+                HttpResponseMessage postResponse = await httpClient.PostAsync(topicUri, new HttpStringContent(respBody, Windows.Storage.Streams.UnicodeEncoding.Utf8, "application/vnd.kfka.v1+json"));
             }
-            
+            catch
+            {
+                LogToScreen("POST failure");
+            }
 
         }
         public class NameValueItem
@@ -176,7 +182,7 @@ namespace wssccat_weatherstation_client
                     using (MemoryStream strm = new MemoryStream())
                     {
                         jsonSerializer.WriteObject(strm, this);
-                        byte[] buf = strm.ToArray(); 
+                        byte[] buf = strm.ToArray();
                         return Encoding.UTF8.GetString(buf, 0, buf.Length);
                     }
                 }
