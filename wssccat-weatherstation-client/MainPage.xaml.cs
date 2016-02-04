@@ -63,22 +63,7 @@ namespace wssccat_weatherstation_client
 
                 if (item != null)
                 {
-                    int debug = items.Count;
-                    if (items.Count >2)
-                    {
-                        string[] namesDebug = items.Select(nme => nme.Name).ToArray();
-                        foreach (string Name in namesDebug)
-                        {
-                            string readme = Name; 
-                        }
-                        
-                        //await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => items.Add(item));
-                    }
-                    else
-                    {
-                        await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => items.Add(item));
-                    }
-                    //await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => items.Add(item));
+                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => items.Add(item));
                 }
                 await Dispatcher.RunAsync(CoreDispatcherPriority.Low, () => UpdateScreen());
                 await PostDataAsync();
@@ -134,9 +119,21 @@ namespace wssccat_weatherstation_client
         }
         private void UpdateScreen()
         {
-                LogToScreen("Fake temp is: " + data.FahrenheitTemperature + "\tTime Stamp is: " + data.TimeStamp + "\tBarometric Pressure is: " + data.BarometricPressure);
-                ((LineSeries)LineChartWithAxes.Series[0]).ItemsSource = items;
-                ((LineSeries)LineChartWithAxes.Series[0]).DependentRangeAxis =
+            LogToScreen("Fake temp is: " + data.FahrenheitTemperature + "\tTime Stamp is: " + data.TimeStamp + "\tBarometric Pressure is: " + data.BarometricPressure);
+
+            if (items.Count > 4)
+            {
+                int i = items.Count;
+                int j = 0;
+                while (i > 4) //limit number of points graphed to screen to 4
+                {
+                    --i;
+                    items.RemoveAt(j++); //remove all items starting from the oldest and moving up until we have an array the size we want
+                }
+                 
+            }
+            ((LineSeries)LineChartWithAxes.Series[0]).ItemsSource = items;
+            ((LineSeries)LineChartWithAxes.Series[0]).DependentRangeAxis =
                     new LinearAxis
                     {
                         Minimum = 0,
