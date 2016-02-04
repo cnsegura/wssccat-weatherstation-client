@@ -149,7 +149,8 @@ namespace wssccat_weatherstation_client
         {
             string topicString = "/SensorData";
             UriBuilder u1 = new UriBuilder();
-            u1.Host = "localhost";
+            //u1.Host = "localhost";
+            u1.Host = "wssccatiot.westus.cloudapp.azure.com";
             u1.Port = 8080;
             u1.Path = "topic" + topicString;
             u1.Scheme = "http";
