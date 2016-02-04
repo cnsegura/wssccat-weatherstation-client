@@ -69,7 +69,7 @@ namespace wssccat_weatherstation_client
                         string[] namesDebug = items.Select(nme => nme.Name).ToArray();
                         foreach (string Name in namesDebug)
                         {
-                            string readme = Name;
+                            string readme = Name; 
                         }
                         
                         //await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => items.Add(item));
