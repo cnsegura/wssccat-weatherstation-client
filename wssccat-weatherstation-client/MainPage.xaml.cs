@@ -68,7 +68,7 @@ namespace wssccat_weatherstation_client
                 await Dispatcher.RunAsync(CoreDispatcherPriority.Low, () => UpdateScreen());
                 await PostDataAsync();
 
-            }, TimeSpan.FromSeconds(2));
+            }, TimeSpan.FromSeconds(3));
 
 
         }
@@ -94,7 +94,7 @@ namespace wssccat_weatherstation_client
                     else
                     {
                         data.FahrenheitTemperature = _random.Next(75, 100);
-                        data.TimeStamp = DateTimeOffset.Now.ToLocalTime().ToString();
+                        data.TimeStamp = DateTime.Now.Hour.ToString() + ":" + DateTime.Now.Minute.ToString() + ":" + DateTime.Now.Second.ToString();
                         data.BarometricPressure = _random.Next(20, 100);
                         data.Humidity = _random.Next(20, 100);
                         return new NameValueItem { Name = data.TimeStamp, Value = data.FahrenheitTemperature };
@@ -104,7 +104,7 @@ namespace wssccat_weatherstation_client
             }
             catch (Exception e)
             {
-                //TODO LOG TO SCREEN
+                LogToScreen("Error: " + e +"\n");
                 return null;
             }
             finally
@@ -119,18 +119,18 @@ namespace wssccat_weatherstation_client
         }
         private void UpdateScreen()
         {
-            LogToScreen("Fake temp is: " + data.FahrenheitTemperature + "\tTime Stamp is: " + data.TimeStamp + "\tBarometric Pressure is: " + data.BarometricPressure);
+            //DEBUG LogToScreen("Fake temp is: " + data.FahrenheitTemperature + "\tTime Stamp is: " + data.TimeStamp + "\tBarometric Pressure is: " + data.BarometricPressure);
 
-            if (items.Count > 4)
+            if (items.Count > 3)
             {
                 int i = items.Count;
                 int j = 0;
-                while (i > 4) //limit number of points graphed to screen to 4
+                while (i > 3) //limit number of points graphed to screen to 4
                 {
                     --i;
                     items.RemoveAt(j++); //remove all items starting from the oldest and moving up until we have an array the size we want
                 }
-                 
+
             }
             ((LineSeries)LineChartWithAxes.Series[0]).ItemsSource = items;
             ((LineSeries)LineChartWithAxes.Series[0]).DependentRangeAxis =
@@ -175,10 +175,6 @@ namespace wssccat_weatherstation_client
         }
         public partial class SensorData
         {
-            public SensorData()
-            {
-                TimeStamp = DateTimeOffset.Now.ToLocalTime().ToString();
-            }
             public int BarometricPressure { get; set; }
             public float CelciusTemperature { get; set; }
             public int FahrenheitTemperature { get; set; } 
