@@ -63,7 +63,22 @@ namespace wssccat_weatherstation_client
 
                 if (item != null)
                 {
-                    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => items.Add(item));
+                    int debug = items.Count;
+                    if (items.Count >2)
+                    {
+                        string[] namesDebug = items.Select(nme => nme.Name).ToArray();
+                        foreach (string Name in namesDebug)
+                        {
+                            string readme = Name;
+                        }
+                        
+                        //await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => items.Add(item));
+                    }
+                    else
+                    {
+                        await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => items.Add(item));
+                    }
+                    //await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => items.Add(item));
                 }
                 await Dispatcher.RunAsync(CoreDispatcherPriority.Low, () => UpdateScreen());
                 await PostDataAsync();
