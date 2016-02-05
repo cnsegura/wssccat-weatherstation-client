@@ -13,6 +13,8 @@ using Windows.System.Threading;
 using System.Net;
 using System.Threading.Tasks;
 using System.Text;
+using Windows.Networking;
+using Windows.Networking.Connectivity;
 using Windows.Networking.Sockets;
 using Windows.Storage.Streams;
 using Windows.UI.Core;
@@ -60,12 +62,13 @@ namespace wssccat_weatherstation_client
             {
                 await ClearScreen();
                 var item = await GetGraphData();
-
+                
                 if (item != null)
                 {
                     await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () => items.Add(item));
+                    await Dispatcher.RunAsync(CoreDispatcherPriority.Low, () => UpdateScreen());
                 }
-                await Dispatcher.RunAsync(CoreDispatcherPriority.Low, () => UpdateScreen());
+                
                 await PostDataAsync();
 
             }, TimeSpan.FromSeconds(3));
@@ -151,7 +154,7 @@ namespace wssccat_weatherstation_client
             UriBuilder u1 = new UriBuilder();
             //u1.Host = "localhost";
             u1.Host = "wssccatiot.westus.cloudapp.azure.com";
-            u1.Port = 8081;
+            u1.Port = 8082;
             u1.Path = "topic" + topicString;
             u1.Scheme = "http";
             Uri topicUri = u1.Uri;
@@ -176,11 +179,20 @@ namespace wssccat_weatherstation_client
         }
         public partial class SensorData
         {
+            public SensorData()
+            {
+                var hostNames = NetworkInformation.GetHostNames();
+                var localName = hostNames.FirstOrDefault(name => name.DisplayName.Contains(".local"));
+                ClientName = localName.DisplayName.Replace(".local", "");
+            }
             public int BarometricPressure { get; set; }
             public float CelciusTemperature { get; set; }
             public int FahrenheitTemperature { get; set; } 
             public int Humidity { get; set; }
             public string TimeStamp { get; set; }
+            public string ClientName { get; set; }
+            
+            
         }
 
         private void Status_TextChanged(object sender, TextChangedEventArgs e)
