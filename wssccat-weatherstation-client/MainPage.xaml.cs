@@ -163,11 +163,12 @@ namespace wssccat_weatherstation_client
             Uri topicUri = u1.Uri;
             string json = JsonConvert.SerializeObject(data, Formatting.None);
             //Currently focused on REST API surface for Confluent.io Kafka deployment. We can make this more generic in the future
-            HttpClient httpClient = new HttpClient();
+            var baseFilter = new HttpBaseProtocolFilter();
+            baseFilter.AutomaticDecompression = false; //turn OFF header "Accept-Encoding"
+            HttpClient httpClient = new HttpClient(baseFilter);
             try
             {
-                httpClient.DefaultRequestHeaders.Accept.Add(new HttpMediaTypeWithQualityHeaderValue("application/vnd.kafka.json.v1+json"));
-                httpClient.DefaultRequestHeaders.AcceptEncoding.Remove();
+                httpClient.DefaultRequestHeaders.Accept.Add(new HttpMediaTypeWithQualityHeaderValue("application/vnd.kafka.json.v1+json")); //replace with accept header
                 HttpResponseMessage postResponse = await httpClient.PostAsync(topicUri, new HttpStringContent(json, Windows.Storage.Streams.UnicodeEncoding.Utf8, "application/vnd.kafka.json.v1+json"));
             }
             catch
