@@ -96,10 +96,13 @@ namespace wssccat_weatherstation_client
                     }
                     else
                     {
-                        data.FahrenheitTemperature = _random.Next(75, 100);
+                        //data.FahrenheitTemperature = _random.Next(75, 100);
+                        data.FahrenheitTemperature = "88";
                         data.TimeStamp = DateTime.Now.Hour.ToString() + ":" + DateTime.Now.Minute.ToString() + ":" + DateTime.Now.Second.ToString();
-                        data.BarometricPressure = _random.Next(20, 100);
-                        data.Humidity = _random.Next(20, 100);
+                        //data.BarometricPressure = _random.Next(20, 100);
+                        data.BarometricPressure = "99";
+                        //data.Humidity = _random.Next(20, 100);
+                        data.Humidity = "77";
                         return new NameValueItem { Name = data.TimeStamp, Value = data.FahrenheitTemperature };
                        
                     }
@@ -145,8 +148,8 @@ namespace wssccat_weatherstation_client
                         Interval = 20,
                         ShowGridLines = true
                     };
-            topGauge.Value = data.BarometricPressure;
-            bottomGauge.Value = data.Humidity;
+            //topGauge.Value = data.BarometricPressure;
+            //bottomGauge.Value = data.Humidity;
         }
         private async Task PostDataAsync()
         {
@@ -155,7 +158,7 @@ namespace wssccat_weatherstation_client
             //u1.Host = "localhost";
             u1.Host = "wssccatiot.westus.cloudapp.azure.com";
             u1.Port = 8082;
-            u1.Path = "topic" + topicString;
+            u1.Path = "topics" + topicString;
             u1.Scheme = "http";
             Uri topicUri = u1.Uri;
             string json = JsonConvert.SerializeObject(data, Formatting.None);
@@ -163,8 +166,9 @@ namespace wssccat_weatherstation_client
             HttpClient httpClient = new HttpClient();
             try
             {
-                httpClient.DefaultRequestHeaders.Accept.Add(new HttpMediaTypeWithQualityHeaderValue("application/vnd.kafka.v1+json"));
-                HttpResponseMessage postResponse = await httpClient.PostAsync(topicUri, new HttpStringContent(json, Windows.Storage.Streams.UnicodeEncoding.Utf8, "application/vnd.kfka.v1+json"));
+                httpClient.DefaultRequestHeaders.Accept.Add(new HttpMediaTypeWithQualityHeaderValue("application/vnd.kafka.json.v1+json"));
+                httpClient.DefaultRequestHeaders.AcceptEncoding.Remove();
+                HttpResponseMessage postResponse = await httpClient.PostAsync(topicUri, new HttpStringContent(json, Windows.Storage.Streams.UnicodeEncoding.Utf8, "application/vnd.kafka.json.v1+json"));
             }
             catch
             {
@@ -175,7 +179,8 @@ namespace wssccat_weatherstation_client
         public class NameValueItem
         {
             public string Name { get; set; }
-            public int Value { get; set; }
+            //public int Value { get; set; }
+            public string Value { get; set; }
         }
         public partial class SensorData
         {
@@ -185,14 +190,19 @@ namespace wssccat_weatherstation_client
                 var localName = hostNames.FirstOrDefault(name => name.DisplayName.Contains(".local"));
                 ClientName = localName.DisplayName.Replace(".local", "");
             }
-            public int BarometricPressure { get; set; }
-            public float CelciusTemperature { get; set; }
-            public int FahrenheitTemperature { get; set; } 
-            public int Humidity { get; set; }
+            //public int BarometricPressure { get; set; }
+            ////public float CelciusTemperature { get; set; }
+            //public int FahrenheitTemperature { get; set; }
+            //public int Humidity { get; set; }
             public string TimeStamp { get; set; }
             public string ClientName { get; set; }
-            
-            
+
+            public string BarometricPressure { get; set; }
+            //public string CelciusTermperature { get; set; }
+            public string Humidity { get; set; }
+            public string FahrenheitTemperature { get; set; }
+
+
         }
 
         private void Status_TextChanged(object sender, TextChangedEventArgs e)
