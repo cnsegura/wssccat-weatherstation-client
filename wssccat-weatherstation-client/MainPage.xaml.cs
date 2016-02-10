@@ -168,8 +168,13 @@ namespace wssccat_weatherstation_client
             HttpClient httpClient = new HttpClient(baseFilter);
             try
             {
-                httpClient.DefaultRequestHeaders.Accept.Add(new HttpMediaTypeWithQualityHeaderValue("application/vnd.kafka.json.v1+json")); //replace with accept header
-                HttpResponseMessage postResponse = await httpClient.PostAsync(topicUri, new HttpStringContent(json, Windows.Storage.Streams.UnicodeEncoding.Utf8, "application/vnd.kafka.json.v1+json"));
+                //httpClient.DefaultRequestHeaders.Accept.Add(new HttpMediaTypeWithQualityHeaderValue("application/vnd.kafka.json.v1+json")); //replace with accept header
+                //HttpResponseMessage postResponse = await httpClient.PostAsync(topicUri, new HttpStringContent(json, Windows.Storage.Streams.UnicodeEncoding.Utf8, "application/vnd.kafka.json.v1+json"));
+                var testMe = new HttpStringContent(json, Windows.Storage.Streams.UnicodeEncoding.Utf8, "application/vnd.kafka.json.v1+json");
+                testMe.Headers.ContentType = null;
+                testMe.Headers.ContentType = new HttpMediaTypeHeaderValue("application/vnd.kafka.json.v1+json");
+                //testMe.Headers.ContentType = "application/vnd.kafka.json.v1+json";
+                HttpResponseMessage postResponse = await httpClient.PostAsync(topicUri, testMe);
             }
             catch
             {
