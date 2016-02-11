@@ -158,12 +158,14 @@ namespace wssccat_weatherstation_client
             u1.Path = "topics" + topicString;
             u1.Scheme = "http";
             Uri topicUri = u1.Uri;
-            string jsonBody = JsonConvert.SerializeObject(data, Formatting.None); 
-            string correctedJsonBody = jsonBody.Replace(",", "}}, {\"value\":{"); //have to add in some json features into the string. Easier than creating unnecessary classes that would make this come out automatically
+            //Currently focused on REST API surface for Confluent.io Kafka deployment. We can make this more generic in the future
+            string jsonBody = JsonConvert.SerializeObject(data, Formatting.None);
+            //string correctedJsonBody = jsonBody.Replace(",", "}}, {\"value\":{"); //have to add in some json features into the string. Easier than creating unnecessary classes that would make this come out automatically
+            jsonBody = jsonBody.Replace(",", "}}, {\"value\":{"); //have to add in some json features into the string. Easier than creating unnecessary classes that would make this come out automatically
             string jsonHeader = ("{\"records\":[{\"value\":"); //same as above, fixing string for Server requirements
             string jsonFooter = ("}]}"); //ditto
-            string json = jsonHeader + correctedJsonBody + jsonFooter;
-            //Currently focused on REST API surface for Confluent.io Kafka deployment. We can make this more generic in the future
+            string json = jsonHeader + jsonBody + jsonFooter;
+            
             var baseFilter = new HttpBaseProtocolFilter();
             baseFilter.AutomaticDecompression = false; //turn OFF header "Accept-Encoding"
             HttpClient httpClient = new HttpClient(baseFilter);
