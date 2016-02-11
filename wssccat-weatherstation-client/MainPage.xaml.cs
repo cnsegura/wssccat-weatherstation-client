@@ -97,12 +97,9 @@ namespace wssccat_weatherstation_client
                     else
                     {
                         data.FahrenheitTemperature = _random.Next(75, 100);
-                        //data.FahrenheitTemperature = "88";
                         data.TimeStamp = DateTime.Now.Hour.ToString() + ":" + DateTime.Now.Minute.ToString() + ":" + DateTime.Now.Second.ToString();
                         data.BarometricPressure = _random.Next(20, 100);
-                        //data.BarometricPressure = "99";
                         data.Humidity = _random.Next(20, 100);
-                        //data.Humidity = "77";
                         return new NameValueItem { Name = data.TimeStamp, Value = data.FahrenheitTemperature };
                        
                     }
@@ -161,7 +158,7 @@ namespace wssccat_weatherstation_client
             u1.Path = "topics" + topicString;
             u1.Scheme = "http";
             Uri topicUri = u1.Uri;
-            string jsonBody = JsonConvert.SerializeObject(data, Formatting.None);
+            string jsonBody = JsonConvert.SerializeObject(data, Formatting.None); 
             string correctedJsonBody = jsonBody.Replace(",", "}}, {\"value\":{"); //have to add in some json features into the string. Easier than creating unnecessary classes that would make this come out automatically
             string jsonHeader = ("{\"records\":[{\"value\":"); //same as above, fixing string for Server requirements
             string jsonFooter = ("}]}"); //ditto
@@ -188,7 +185,6 @@ namespace wssccat_weatherstation_client
         {
             public string Name { get; set; }
             public int Value { get; set; }
-            //public string Value { get; set; }
         }
         public partial class SensorData
         {
@@ -204,16 +200,6 @@ namespace wssccat_weatherstation_client
             public int Humidity { get; set; }
             public string TimeStamp { get; set; }
             public string ClientName { get; set; }
-
-
-            //DEBUG STRINGS
-            //public string BarometricPressure { get; set; }
-            ////public string CelciusTermperature { get; set; }
-            //public string Humidity { get; set; }
-            //public string FahrenheitTemperature { get; set; }
-           
-
-
         }
 
         private void Status_TextChanged(object sender, TextChangedEventArgs e)
