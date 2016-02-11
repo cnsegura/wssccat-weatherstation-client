@@ -161,7 +161,11 @@ namespace wssccat_weatherstation_client
             u1.Path = "topics" + topicString;
             u1.Scheme = "http";
             Uri topicUri = u1.Uri;
-            string json = JsonConvert.SerializeObject(data, Formatting.None);
+            string jsonBody = JsonConvert.SerializeObject(data, Formatting.None);
+            string correctedJsonBody = jsonBody.Replace(",", "}}, {\"value\":{");
+            string jsonHeader = ("{\"records\":[{\"value\":");
+            string jsonFooter = ("}]}");
+            string json = jsonHeader + correctedJsonBody + jsonFooter;
             //Currently focused on REST API surface for Confluent.io Kafka deployment. We can make this more generic in the future
             var baseFilter = new HttpBaseProtocolFilter();
             baseFilter.AutomaticDecompression = false; //turn OFF header "Accept-Encoding"
@@ -174,7 +178,6 @@ namespace wssccat_weatherstation_client
                 headerContent.Headers.ContentType = null; // removing all header content and will replace with the required values
                 headerContent.Headers.ContentType = new HttpMediaTypeHeaderValue("application/vnd.kafka.json.v1+json"); //Content-Type: application/vnd.kafka.json.v1+json
                 httpClient.DefaultRequestHeaders.Accept.Add(new HttpMediaTypeWithQualityHeaderValue("application/vnd.kafka.json.v1+json, application/vnd.kafka+json, application/json")); //Add Accept: application/vnd.kafka.json.vl+json, application... header
-                //testMe.Headers.ContentType = "application/vnd.kafka.json.v1+json";
                 HttpResponseMessage postResponse = await httpClient.PostAsync(topicUri, headerContent);
             }
             catch
