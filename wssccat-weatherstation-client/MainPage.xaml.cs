@@ -208,6 +208,7 @@ namespace wssccat_weatherstation_client
             //public string CelciusTermperature { get; set; }
             public string Humidity { get; set; }
             public string FahrenheitTemperature { get; set; }
+           
 
 
         }
